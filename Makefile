@@ -1,6 +1,7 @@
-
-TARGET=kemieBSD
-C_FILES=./libc/string/memcmp.c \
+CC=gcc
+TARGET=freeunix-cli
+C_FILES=./libc/string/ctos.c \
+	./libc/string/memcmp.c \
 	./libc/string/memset.c \
 	./libc/string/strcat.c \
 	./libc/string/strchr.c \
@@ -10,33 +11,30 @@ C_FILES=./libc/string/memcmp.c \
 	./libc/string/strncmp.c \
 	./libc/string/strstr.c \
 	./libc/string/strutil.c \
-	./libc/string/ctos.c \
 	./kernel/tty.c \
-	./kernel/io.c \
 	./kernel.c
 
-ASM_FILE = start.asm
-ASM_OBJ = $(ASM_FILE:.asm=.o)
 
-OBJS = $(C_FILES:.c=.o)
+OBJS=$(C_FILES:.c=.o)
+	
+all compile: $(TARGET)
 
-CC = arm-none-eabi-gcc
-AS = arm-none-eabi-as
+all: finale
 
-CFLAGS = -ffreestanding -fno-exceptions
+.PHONY: all compile clean finale
 
-all: $(TARGET)
+%.o:
+	$(CC) -c $(@:.o=.c) -o $@ -ffreestanding -fno-exceptions -m32
 
-%.o: %.c
-	$(CC) -c $< -o $@ $(CFLAGS)
+$(TARGET): $(OBJS)
+	$(shell nasm -f elf start.asm -o start.o)
+	$(CC) -m32 -nostdlib -nodefaultlibs -lgcc start.o $? -T linker.ld -o $(TARGET)
 
-$(ASM_OBJ): $(ASM_FILE)
-	$(AS) -o $@ $<
-
-$(TARGET): $(ASM_OBJ) $(OBJS)
-	$(CC) -nostdlib -nodefaultlibs -lgcc $^ -T linker.ld -o $@
-
-.PHONY: all clean
+finale:
+	$(shell cd ~/Desktop/my_os/)
+	$(shell cp $(TARGET) ./iso/boot/$(TARGET))
+	$(shell grub2-mkrescue iso —output=$(TARGET).iso)
 
 clean:
-	rm -f *.o $(TARGET)
+	rm -f *.o $(TARGET) $(TARGET).iso
+	find . -name \*.o | xargs —no-run-if-empty rm
