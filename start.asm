@@ -11,10 +11,12 @@ section .text
 
 _start:  
     cli  
-    mov esp, stack  c
-    all kernel_early  
+    mov esp, stack
+    call kernel_early  
     call main  
     hlt
 
 section .bss
 resb 8192
+
+stack:
