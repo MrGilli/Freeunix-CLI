@@ -1,4 +1,5 @@
 #!/bin/bash
+clear 
 
 make clean
 
@@ -6,4 +7,4 @@ make clean
 make
 
 # Run the compiled file using QEMU (change this command as needed)
-qemu-system-arm -M raspi2 -kernel kemieBSD
+qemu-system-x86_64 freeunix-cli.iso
