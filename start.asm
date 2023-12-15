@@ -1,24 +1,20 @@
-.section .text
-    .align 2
-    .global _start
+bits 32
+global _start
+extern kernel_early
+extern main
 
-    .equ    MAGIC, 0x1BADB002
-    .equ    FLAGS, 0x00
+section .text
+    align 4
+    dd 0x1BADB002                            ; magic
+    dd 0x00                                          ; flags
+    dd - (0x1BADB002 + 0x00) ; checksum
 
-_start:
-    cpsid   i               @ Disable IRQs (Disable Interrupts)
-    ldr     sp, =stack      @ Set stack pointer
+_start:  
+    cli  
+    mov esp, stack  c
+    all kernel_early  
+    call main  
+    hlt
 
-    bl      kernel_early    @ Call kernel_early function (if defined)
-    
-    bl      main            @ Call main function (if defined)
-
-loop:
-    b       loop            @ Infinite loop after main
-
-.section .bss
-    .align 2
-stack:
-    .space  8192            @ Define stack space
-
-.end
+section .bss
+resb 8192
